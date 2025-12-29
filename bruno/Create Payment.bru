@@ -1,0 +1,31 @@
+meta {
+  name: Create Payment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{basePath}}/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "cardNumber": "350983085",
+    "ExpiryMonth": 12,
+    "ExpiryYear": 2025,
+    "Currency": "USD",
+    "Amount": 100, 
+    "CVV": "333"
+  }
+}
+
+body:form-urlencoded {
+  CardNumber: 3509695809830285
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
