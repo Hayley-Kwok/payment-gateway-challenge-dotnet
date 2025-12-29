@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Services;
 
@@ -23,4 +24,11 @@ public class PaymentsController : Controller
 
         return new OkObjectResult(payment);
     }
+    
+    [HttpPost("create")]
+    public async Task<IActionResult> ProcessPayment([FromBody] PrePaymentRequest request)
+    {
+        return Ok();
+    }
+
 }
