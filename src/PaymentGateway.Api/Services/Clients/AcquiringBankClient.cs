@@ -17,11 +17,17 @@ public class AcquiringBankClient(string url, HttpClient httpClient) : IAcquiring
 
         if (response.IsSuccessStatusCode)
         {
-            var responseData = await response.Content.ReadFromJsonAsync<AcquiringBankProcessPaymentResponse>();
-            if (responseData is null)
-                return (null, new AcquiringBankProcessPaymentErrorResponse(HttpStatusCode.OK, "Acquiring bank returned an empty response."));
-
-            return (responseData, null);
+            try
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<AcquiringBankProcessPaymentResponse>();
+                if (responseData is null)
+                    return (null, new AcquiringBankProcessPaymentErrorResponse(HttpStatusCode.OK, "Acquiring bank returned an empty response."));
+                return (responseData, null);
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                return (null, new AcquiringBankProcessPaymentErrorResponse(HttpStatusCode.OK, $"Failed to parse acquiring bank response: {ex.Message}"));
+            }
         }
 
         var errorBody = await response.Content.ReadAsStringAsync();

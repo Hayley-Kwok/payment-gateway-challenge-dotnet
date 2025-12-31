@@ -34,18 +34,6 @@ public class ProcessPaymentRequest
             Amount = Amount
         };
     
-    public PostPaymentResponse ToPostPaymentResponse(Guid paymentId, PaymentStatus paymentStatus) =>
-        new()
-        {
-            Id = paymentId,
-            Status =  paymentStatus,
-            CardNumberLastFour = int.Parse(CardNumber[^4..]),
-            ExpiryMonth = ExpiryMonth,
-            ExpiryYear = ExpiryYear,
-            Currency = Currency,
-            Amount = Amount,
-        };
-    
     public PaymentEntity ToPaymentEntity(Guid paymentId, PaymentStatus paymentStatus, string errorMessage = "") =>
         new()
         {
