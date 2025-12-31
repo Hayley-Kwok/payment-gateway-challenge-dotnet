@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
 using PaymentGateway.Api.Controllers;
+using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
-using PaymentGateway.Api.Services;
+using PaymentGateway.Api.Services.Repositories;
 
 namespace PaymentGateway.Api.Tests;
 
@@ -17,7 +18,7 @@ public class PaymentsControllerTests
     public async Task RetrievesAPaymentSuccessfully()
     {
         // Arrange
-        var payment = new PostPaymentResponse
+        var payment = new PaymentDto
         {
             Id = Guid.NewGuid(),
             ExpiryYear = _random.Next(2023, 2030),

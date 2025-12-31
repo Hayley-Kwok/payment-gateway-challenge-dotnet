@@ -2,25 +2,19 @@
 
 using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
-using PaymentGateway.Api.Services;
+using PaymentGateway.Api.Services.Processors;
+using PaymentGateway.Api.Services.Repositories;
 
 namespace PaymentGateway.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class PaymentsController : Controller
+public class PaymentsController(PaymentsRepository paymentsRepository, IPaymentProcessor paymentProcessor) : Controller
 {
-    private readonly PaymentsRepository _paymentsRepository;
-
-    public PaymentsController(PaymentsRepository paymentsRepository)
-    {
-        _paymentsRepository = paymentsRepository;
-    }
-
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PostPaymentResponse?>> GetPaymentAsync(Guid id)
     {
-        var payment = _paymentsRepository.Get(id);
+        var payment = paymentsRepository.Get(id);
 
         return new OkObjectResult(payment);
     }
@@ -28,7 +22,7 @@ public class PaymentsController : Controller
     [HttpPost("")]
     public async Task<ActionResult<ProcessPaymentResponse>> ProcessPayment([FromBody] ProcessPaymentRequest request)
     {
-        return Ok();
+        var response = await paymentProcessor.ProcessPaymentAsync(request);
+        return Ok(response);
     }
-
 }
