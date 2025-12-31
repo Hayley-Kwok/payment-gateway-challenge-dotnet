@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<PaymentsRepository>();
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<PrePaymentRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProcessPaymentRequestValidator>();
 
 var app = builder.Build();
 

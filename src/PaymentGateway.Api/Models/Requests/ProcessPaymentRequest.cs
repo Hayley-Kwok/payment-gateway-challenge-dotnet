@@ -1,6 +1,6 @@
 ﻿namespace PaymentGateway.Api.Models.Requests;
 
-public class PrePaymentRequest
+public class ProcessPaymentRequest
 {
     public required string CardNumber { get; set; }
     public required int ExpiryMonth { get; set; }

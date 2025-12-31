@@ -25,8 +25,8 @@ public class PaymentsController : Controller
         return new OkObjectResult(payment);
     }
     
-    [HttpPost("create")]
-    public async Task<IActionResult> ProcessPayment([FromBody] PrePaymentRequest request)
+    [HttpPost("")]
+    public async Task<ActionResult<ProcessPaymentResponse>> ProcessPayment([FromBody] ProcessPaymentRequest request)
     {
         return Ok();
     }

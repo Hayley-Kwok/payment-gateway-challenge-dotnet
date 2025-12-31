@@ -4,9 +4,9 @@ using PaymentGateway.Api.Models.Requests;
 
 namespace PaymentGateway.Api.Models.Validators;
 
-public class PrePaymentRequestValidator : AbstractValidator<PrePaymentRequest>
+public class ProcessPaymentRequestValidator : AbstractValidator<ProcessPaymentRequest>
 {
-    public PrePaymentRequestValidator()
+    public ProcessPaymentRequestValidator()
     {
         RuleFor(x => x.CardNumber)
             .NotEmpty()

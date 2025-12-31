@@ -6,14 +6,14 @@ using PaymentGateway.Api.Models.Validators;
 namespace PaymentGateway.Api.Unit.Tests.Models.Validators;
 
 
-public class PrePaymentRequestValidatorTests
+public class ProcessPaymentRequestValidatorTests
 {
-    private readonly PrePaymentRequestValidator _validator = new();
+    private readonly ProcessPaymentRequestValidator _validator = new();
 
-    private PrePaymentRequest CreateValidRequest()
+    private ProcessPaymentRequest CreateValidRequest()
     {
         var now = DateTime.UtcNow;
-        return new PrePaymentRequest
+        return new ProcessPaymentRequest
         {
             CardNumber = "3503489848184448",
             ExpiryMonth = now.Month,
