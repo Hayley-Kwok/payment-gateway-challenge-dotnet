@@ -17,7 +17,7 @@ public class PaymentsControllerTests
     private readonly Random _random = new();
     
     [Fact]
-    public async Task RetrievesAPaymentSuccessfully()
+    public async Task Get_CanRetrievesAPaymentSuccessfully()
     {
         // Arrange
         var payment = new PaymentEntity
@@ -38,7 +38,7 @@ public class PaymentsControllerTests
         var webApplicationFactory = new WebApplicationFactory<PaymentsController>();
         var client = webApplicationFactory.WithWebHostBuilder(builder =>
             builder.ConfigureServices(services => ((ServiceCollection)services)
-                .AddSingleton(paymentsRepository)))
+                .AddSingleton<IPaymentsRepository>(paymentsRepository)))
             .CreateClient();
 
         // Act
@@ -51,7 +51,7 @@ public class PaymentsControllerTests
     }
 
     [Fact]
-    public async Task Returns404IfPaymentNotFound()
+    public async Task Get_Returns404IfPaymentNotFound()
     {
         // Arrange
         var webApplicationFactory = new WebApplicationFactory<PaymentsController>();

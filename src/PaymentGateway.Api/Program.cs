@@ -5,6 +5,7 @@ using PaymentGateway.Api.Models.Validators;
 using PaymentGateway.Api.Services.Clients;
 using PaymentGateway.Api.Services.Processors;
 using PaymentGateway.Api.Services.Repositories;
+using PaymentGateway.Api.Services.Retrievers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ builder.Services.AddSingleton<HttpClient>();
 // there is a better way to feed in the url (e.g. from config/option) but for now this will do
 builder.Services.AddSingleton<IAcquiringBankClient, AcquiringBankClient>(sp => new AcquiringBankClient(AcquiringBankClient.LocalTestUrl,
     sp.GetRequiredService<HttpClient>()));
+
+builder.Services.AddSingleton<IPaymentRetriever, PaymentRetriever>();
 builder.Services.AddSingleton<IPaymentProcessor, PaymentProcessor>();
 
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();

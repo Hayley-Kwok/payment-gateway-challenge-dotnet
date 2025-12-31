@@ -3,7 +3,7 @@ using PaymentGateway.Api.Services.Repositories;
 
 namespace PaymentGateway.Api.Services.Retrievers;
 
-public class PaymentRetriever(IPaymentsRepository paymentsRepository)
+public class PaymentRetriever(IPaymentsRepository paymentsRepository) : IPaymentRetriever
 {
     public PostPaymentResponse? GetPaymentRequest(Guid id)
     {
