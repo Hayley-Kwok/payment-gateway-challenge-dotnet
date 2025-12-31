@@ -1,4 +1,5 @@
-﻿using PaymentGateway.Api.Models.Responses;
+﻿using PaymentGateway.Api.Models.Entities;
+using PaymentGateway.Api.Models.Responses;
 
 namespace PaymentGateway.Api.Models.Requests;
 
@@ -45,7 +46,7 @@ public class ProcessPaymentRequest
             Amount = Amount,
         };
     
-    public PaymentDto ToPaymentDto(Guid paymentId, PaymentStatus paymentStatus, string errorMessage = "") =>
+    public PaymentEntity ToPaymentEntity(Guid paymentId, PaymentStatus paymentStatus, string errorMessage = "") =>
         new()
         {
             Id = paymentId,

@@ -15,8 +15,8 @@ public class PaymentProcessor(IAcquiringBankClient acquiringBankClient, Payments
 
         if (error != null)
         {
-            var paymentDto = request.ToPaymentDto(paymentId, PaymentStatus.Declined, error.ErrorMessage);
-            paymentsRepository.Add(paymentDto);
+            var paymentEntity = request.ToPaymentEntity(paymentId, PaymentStatus.Declined, error.ErrorMessage);
+            paymentsRepository.Add(paymentEntity);
             
             return request.ToProcessPaymentResponse(paymentId, PaymentStatus.Declined);
         }
@@ -28,17 +28,17 @@ public class PaymentProcessor(IAcquiringBankClient acquiringBankClient, Payments
         
         if (response.Authorized)
         {
-            var paymentDto = request.ToPaymentDto(paymentId, PaymentStatus.Authorized);
+            var paymentEntity = request.ToPaymentEntity(paymentId, PaymentStatus.Authorized);
             
             // Should probably save the authorised code too?
-            paymentsRepository.Add(paymentDto);
+            paymentsRepository.Add(paymentEntity);
             
             return request.ToProcessPaymentResponse(paymentId, PaymentStatus.Authorized);
         }
         else
         {
-            var paymentDto = request.ToPaymentDto(paymentId, PaymentStatus.Rejected, "Payment was rejected by acquiring bank.");
-            paymentsRepository.Add(paymentDto);
+            var paymentEntity = request.ToPaymentEntity(paymentId, PaymentStatus.Rejected, "Payment was rejected by acquiring bank.");
+            paymentsRepository.Add(paymentEntity);
             
             return request.ToProcessPaymentResponse(paymentId, PaymentStatus.Rejected);
         }

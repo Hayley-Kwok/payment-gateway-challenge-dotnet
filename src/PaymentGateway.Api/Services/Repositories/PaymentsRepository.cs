@@ -1,17 +1,18 @@
-﻿using PaymentGateway.Api.Models.Requests;
+﻿using PaymentGateway.Api.Models.Entities;
+using PaymentGateway.Api.Models.Requests;
 
 namespace PaymentGateway.Api.Services.Repositories;
 
 public class PaymentsRepository
 {
-    public List<PaymentDto> Payments = new();
+    public List<PaymentEntity> Payments = new();
     
-    public void Add(PaymentDto paymentDto)
+    public void Add(PaymentEntity paymentEntity)
     {
-        Payments.Add(paymentDto);
+        Payments.Add(paymentEntity);
     }
 
-    public PaymentDto Get(Guid id)
+    public PaymentEntity Get(Guid id)
     {
         return Payments.FirstOrDefault(p => p.Id == id);
     }

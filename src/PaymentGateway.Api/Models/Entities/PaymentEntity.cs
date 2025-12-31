@@ -1,6 +1,6 @@
-﻿namespace PaymentGateway.Api.Models.Requests;
+﻿namespace PaymentGateway.Api.Models.Entities;
 
-public class PaymentDto
+public class PaymentEntity
 {
     public Guid Id { get; set; }
     public PaymentStatus Status { get; set; }
