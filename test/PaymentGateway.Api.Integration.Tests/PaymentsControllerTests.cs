@@ -119,9 +119,9 @@ public class PaymentsControllerTests
     }
 
     [Fact]
-    public async Task Post_WhenBankReturnRejected_Returns200WithRejected()
+    public async Task Post_WhenBankReturnUnauthorized_Returns200WithDeclined()
     {
-        // Arrange: stub acquiring bank HTTP to return rejected JSON
+        // Arrange: stub acquiring bank HTTP to return Declined JSON
         var bankResponseBody = new AcquiringBankProcessPaymentResponse { Authorized = false };
         var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -149,11 +149,45 @@ public class PaymentsControllerTests
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(payload);
-        Assert.Equal(PaymentStatus.Rejected, payload!.Status);
+        Assert.Equal(PaymentStatus.Declined, payload!.Status);
     }
 
     [Fact]
-    public async Task Post_GivenInvalidRequest_Returns400()
+    public async Task Post_WhenBankReturnError_Returns200WithDeclined()
+    {
+        // Arrange: stub acquiring bank HTTP to return 400 with error body
+        var errorBody = "Invalid card number";
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent(errorBody)
+        };
+
+        var factory = new WebApplicationFactory<PaymentsController>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient));
+                    if (descriptor is not null) services.Remove(descriptor);
+                    services.AddSingleton(StubAcquiringBankHttpHandler.CreateStubHttpClient(httpResponse));
+                });
+            });
+
+        var client = factory.CreateClient();
+        var request = ValidRequest();
+
+        // Act
+        var response = await client.PostAsJsonAsync("/api/Payments", request);
+        var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(payload);
+        Assert.Equal(PaymentStatus.Declined, payload!.Status);
+    }
+
+    [Fact]
+    public async Task Post_GivenInvalidRequest_Returns400WithRejected()
     {
         // Arrange: invalid request
         var factory = new WebApplicationFactory<PaymentsController>();

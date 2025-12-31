@@ -1,6 +1,4 @@
 using FluentValidation;
-using FluentValidation.AspNetCore;
-
 using PaymentGateway.Api.Models.Validators;
 using PaymentGateway.Api.Services.Clients;
 using PaymentGateway.Api.Services.Processors;
@@ -10,11 +8,16 @@ using PaymentGateway.Api.Services.Retrievers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.DefaultIgnoreCondition =
+        System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+});;
 
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddValidatorsFromAssemblyContaining<ProcessPaymentRequestValidator>();
 
 builder.Services.AddSingleton<IPaymentsRepository, PaymentsRepository>();
 builder.Services.AddSingleton<HttpClient>();
@@ -24,18 +27,15 @@ builder.Services.AddSingleton<IAcquiringBankClient, AcquiringBankClient>(sp => n
     sp.GetRequiredService<HttpClient>()));
 
 builder.Services.AddSingleton<IPaymentRetriever, PaymentRetriever>();
-builder.Services.AddSingleton<IPaymentProcessor, PaymentProcessor>();
-
-builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<ProcessPaymentRequestValidator>();
+builder.Services.AddScoped<IPaymentProcessor, PaymentProcessor>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // app.UseSwagger();
-    // app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

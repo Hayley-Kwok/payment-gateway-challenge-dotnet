@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Services.Processors;
@@ -26,6 +27,10 @@ public class PaymentsController(IPaymentRetriever paymentRetriever, IPaymentProc
     public async Task<ActionResult<ProcessPaymentResponse>> ProcessPayment([FromBody] ProcessPaymentRequest request)
     {
         var response = await paymentProcessor.ProcessPaymentAsync(request);
+        if (response.Status == PaymentStatus.Rejected)
+        {
+            return BadRequest(response);
+        }
         return Ok(response);
     }
 }

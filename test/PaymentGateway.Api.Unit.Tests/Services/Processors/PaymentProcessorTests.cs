@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using FluentValidation;
+using FluentValidation.Results;
 
 using FluentAssertions;
 using Moq;
@@ -24,13 +26,23 @@ public class PaymentProcessorTests
         CVV = "123"
     };
 
+    private static Mock<IValidator<ProcessPaymentRequest>> ValidValidatorMock()
+    {
+        var validator = new Mock<IValidator<ProcessPaymentRequest>>(MockBehavior.Strict);
+        validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ProcessPaymentRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+        return validator;
+    }
+
     [Fact]
     public async Task ProcessPaymentAsync_WhenBankReturnsError_ShouldSaveDeclinedAndReturnDeclined()
     {
         // Arrange
         var bankMock = new Mock<IAcquiringBankClient>(MockBehavior.Strict);
         var repoMock = new Mock<IPaymentsRepository>(MockBehavior.Strict);
-        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object);
+        var validatorMock = ValidValidatorMock();
+        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object, validatorMock.Object);
         var request = NewRequest();
 
         var error = new AcquiringBankProcessPaymentErrorResponse(HttpStatusCode.BadRequest, "Invalid card number");
@@ -57,6 +69,7 @@ public class PaymentProcessorTests
 
         bankMock.VerifyAll();
         repoMock.VerifyAll();
+        validatorMock.VerifyAll();
     }
 
     [Fact]
@@ -65,7 +78,8 @@ public class PaymentProcessorTests
         // Arrange
         var bankMock = new Mock<IAcquiringBankClient>(MockBehavior.Strict);
         var repoMock = new Mock<IPaymentsRepository>(MockBehavior.Strict);
-        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object);
+        var validatorMock = ValidValidatorMock();
+        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object, validatorMock.Object);
         var request = NewRequest();
 
         bankMock
@@ -81,6 +95,7 @@ public class PaymentProcessorTests
 
         bankMock.VerifyAll();
         repoMock.VerifyNoOtherCalls();
+        validatorMock.VerifyAll();
     }
 
     [Fact]
@@ -89,7 +104,8 @@ public class PaymentProcessorTests
         // Arrange
         var bankMock = new Mock<IAcquiringBankClient>(MockBehavior.Strict);
         var repoMock = new Mock<IPaymentsRepository>(MockBehavior.Strict);
-        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object);
+        var validatorMock = ValidValidatorMock();
+        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object, validatorMock.Object);
         var request = NewRequest();
 
         var bankResponse = new AcquiringBankProcessPaymentResponse
@@ -117,15 +133,17 @@ public class PaymentProcessorTests
 
         bankMock.VerifyAll();
         repoMock.VerifyAll();
+        validatorMock.VerifyAll();
     }
 
     [Fact]
-    public async Task ProcessPaymentAsync_WhenBankReturnRejected_ShouldSaveRejectedAndReturnRejected()
+    public async Task ProcessPaymentAsync_WhenBankReturnUnAuthorized_ShouldSaveDeclinedAndReturnDeclined()
     {
         // Arrange
         var bankMock = new Mock<IAcquiringBankClient>(MockBehavior.Strict);
         var repoMock = new Mock<IPaymentsRepository>(MockBehavior.Strict);
-        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object);
+        var validatorMock = ValidValidatorMock();
+        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object, validatorMock.Object);
         var request = NewRequest();
 
         var bankResponse = new AcquiringBankProcessPaymentResponse
@@ -146,13 +164,52 @@ public class PaymentProcessorTests
         var response = await processor.ProcessPaymentAsync(request);
 
         // Assert
-        response.Status.Should().Be(PaymentStatus.Rejected);
+        response.Status.Should().Be(PaymentStatus.Declined);
         repoMock.Verify(m => m.Add(It.Is<PaymentEntity>(e =>
-            e.Status == PaymentStatus.Rejected &&
-            e.FailReason == "Payment was rejected by acquiring bank.")), Times.Once);
+            e.Status == PaymentStatus.Declined &&
+            e.FailReason == "Payment was declined by acquiring bank.")), Times.Once);
 
         bankMock.VerifyAll();
         repoMock.VerifyAll();
+        validatorMock.VerifyAll();
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_WhenValidationFails_ShouldSaveRejectedAndReturnRejected()
+    {
+        // Arrange
+        var bankMock = new Mock<IAcquiringBankClient>(MockBehavior.Strict);
+        var repoMock = new Mock<IPaymentsRepository>(MockBehavior.Strict);
+        var validatorMock = new Mock<IValidator<ProcessPaymentRequest>>(MockBehavior.Strict);
+        var processor = new PaymentProcessor(bankMock.Object, repoMock.Object, validatorMock.Object);
+        var request = NewRequest();
+
+        var failures = new[]
+        {
+            new ValidationFailure("CardNumber", "CardNumber must be numeric."),
+            new ValidationFailure("Expiry", "Card expiry date must not be in the past.")
+        };
+        validatorMock
+            .Setup(v => v.ValidateAsync(It.IsAny<ProcessPaymentRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult(failures));
+
+        repoMock
+            .Setup(m => m.Add(It.IsAny<PaymentEntity>()))
+            .Verifiable();
+
+        // Act
+        var response = await processor.ProcessPaymentAsync(request);
+
+        // Assert
+        response.Status.Should().Be(PaymentStatus.Rejected); // matches processor behavior on validation fail
+        repoMock.Verify(m => m.Add(It.Is<PaymentEntity>(e =>
+            e.Status == PaymentStatus.Rejected &&
+            e.FailReason.Contains("CardNumber must be numeric.") &&
+            e.FailReason.Contains("Card expiry date must not be in the past."))), Times.Once);
+
+        bankMock.VerifyNoOtherCalls();
+        repoMock.VerifyAll();
+        validatorMock.VerifyAll();
     }
 }
 
