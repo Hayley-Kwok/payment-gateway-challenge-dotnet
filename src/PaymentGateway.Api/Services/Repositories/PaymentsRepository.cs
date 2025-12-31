@@ -1,19 +1,18 @@
 ﻿using PaymentGateway.Api.Models.Entities;
-using PaymentGateway.Api.Models.Requests;
 
 namespace PaymentGateway.Api.Services.Repositories;
 
-public class PaymentsRepository
+public class PaymentsRepository : IPaymentsRepository
 {
-    public List<PaymentEntity> Payments = new();
+    private readonly List<PaymentEntity> _payments = new();
     
     public void Add(PaymentEntity paymentEntity)
     {
-        Payments.Add(paymentEntity);
+        _payments.Add(paymentEntity);
     }
 
     public PaymentEntity Get(Guid id)
     {
-        return Payments.FirstOrDefault(p => p.Id == id);
+        return _payments.FirstOrDefault(p => p.Id == id);
     }
 }

@@ -2,7 +2,9 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 
 using PaymentGateway.Api.Models.Validators;
-using PaymentGateway.Api.Services;
+using PaymentGateway.Api.Services.Clients;
+using PaymentGateway.Api.Services.Processors;
+using PaymentGateway.Api.Services.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +15,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<PaymentsRepository>();
+builder.Services.AddSingleton<IPaymentsRepository, PaymentsRepository>();
+builder.Services.AddSingleton<HttpClient>();
+
+// there is a better way to feed in the url (e.g. from config/option) but for now this will do
+builder.Services.AddSingleton<IAcquiringBankClient, AcquiringBankClient>(sp => new AcquiringBankClient(AcquiringBankClient.LocalTestUrl,
+    sp.GetRequiredService<HttpClient>()));
+builder.Services.AddSingleton<IPaymentProcessor, PaymentProcessor>();
+
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<ProcessPaymentRequestValidator>();
 
@@ -22,8 +31,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // app.UseSwagger();
+    // app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

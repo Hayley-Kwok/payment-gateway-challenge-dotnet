@@ -6,7 +6,7 @@ using PaymentGateway.Api.Services.Repositories;
 
 namespace PaymentGateway.Api.Services.Processors;
 
-public class PaymentProcessor(IAcquiringBankClient acquiringBankClient, PaymentsRepository paymentsRepository) : IPaymentProcessor
+public class PaymentProcessor(IAcquiringBankClient acquiringBankClient, IPaymentsRepository paymentsRepository) : IPaymentProcessor
 {
     public async Task<ProcessPaymentResponse> ProcessPaymentAsync(ProcessPaymentRequest request)
     {

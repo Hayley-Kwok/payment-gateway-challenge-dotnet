@@ -7,7 +7,7 @@ namespace PaymentGateway.Api.Services.Clients;
 
 public class AcquiringBankClient(string url, HttpClient httpClient) : IAcquiringBankClient
 {
-    public const string LocalTestUrl = "http://localhost:8080";
+    public const string LocalTestUrl = "http://localhost:8080/payments";
 
     public async Task<(AcquiringBankProcessPaymentResponse?, AcquiringBankProcessPaymentErrorResponse?)> ProcessPaymentAsync(AcquiringBankProcessPaymentRequest request)
     {
