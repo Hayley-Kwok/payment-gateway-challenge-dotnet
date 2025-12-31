@@ -11,7 +11,7 @@ public class PaymentsRepository : IPaymentsRepository
         _payments.Add(paymentEntity);
     }
 
-    public PaymentEntity Get(Guid id)
+    public PaymentEntity? Get(Guid id)
     {
         return _payments.FirstOrDefault(p => p.Id == id);
     }

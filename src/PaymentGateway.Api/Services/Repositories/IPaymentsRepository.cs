@@ -5,5 +5,5 @@ namespace PaymentGateway.Api.Services.Repositories;
 public interface IPaymentsRepository
 {
     void Add(PaymentEntity paymentEntity);
-    PaymentEntity Get(Guid id);
+    PaymentEntity? Get(Guid id);
 }
