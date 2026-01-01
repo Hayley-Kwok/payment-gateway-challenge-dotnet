@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using FluentAssertions;
 
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Models;
@@ -48,8 +49,14 @@ public class PaymentsControllerTests
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
         
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(paymentResponse);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        paymentResponse.Should().NotBeNull();
+        paymentResponse!.Status.Should().Be(PaymentStatus.Authorized);
+        paymentResponse.Currency.Should().Be(payment.Currency);
+        paymentResponse.Amount.Should().Be(payment.Amount);
+        paymentResponse.ExpiryMonth.Should().Be(payment.ExpiryMonth);
+        paymentResponse.ExpiryYear.Should().Be(payment.ExpiryYear);
+        paymentResponse.CardNumberLastFour.Should().Be(payment.CardNumberLastFour);
     }
 
     [Fact]
@@ -63,7 +70,7 @@ public class PaymentsControllerTests
         var response = await client.GetAsync($"/api/Payments/{Guid.NewGuid()}");
         
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
     #endregion
     
@@ -108,14 +115,14 @@ public class PaymentsControllerTests
         var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(payload);
-        Assert.Equal(PaymentStatus.Authorized, payload!.Status);
-        Assert.Equal(request.Currency, payload.Currency);
-        Assert.Equal(request.Amount, payload.Amount);
-        Assert.Equal(request.ExpiryMonth, payload.ExpiryMonth);
-        Assert.Equal(request.ExpiryYear, payload.ExpiryYear);
-        Assert.Equal(1111, payload.CardNumberLastFour);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        payload.Should().NotBeNull();
+        payload!.Status.Should().Be(PaymentStatus.Authorized);
+        payload.Currency.Should().Be(request.Currency);
+        payload.Amount.Should().Be(request.Amount);
+        payload.ExpiryMonth.Should().Be(request.ExpiryMonth);
+        payload.ExpiryYear.Should().Be(request.ExpiryYear);
+        payload.CardNumberLastFour.Should().Be(1111);
     }
 
     [Fact]
@@ -147,9 +154,9 @@ public class PaymentsControllerTests
         var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(payload);
-        Assert.Equal(PaymentStatus.Declined, payload!.Status);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        payload.Should().NotBeNull();
+        payload!.Status.Should().Be(PaymentStatus.Declined);
     }
 
     [Fact]
@@ -181,9 +188,9 @@ public class PaymentsControllerTests
         var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(payload);
-        Assert.Equal(PaymentStatus.Declined, payload!.Status);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        payload.Should().NotBeNull();
+        payload!.Status.Should().Be(PaymentStatus.Declined);
     }
 
     [Fact]
@@ -207,7 +214,7 @@ public class PaymentsControllerTests
         var response = await client.PostAsJsonAsync("/api/Payments", invalid);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
     #endregion
 }
