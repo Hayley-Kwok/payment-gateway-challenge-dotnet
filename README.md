@@ -67,6 +67,12 @@ test/
     - Integration tests: test the integration of components to make sure they work together as expected. Only stub the acquiring bank to simulate responses as it is an external dependency.
     - Manual testing: run the API and use bruno to test that endpoints behave as expected.
   
+- How to handle invalid input for the process payment endpoint
+  - Used FluentValidation to define validation rules for the ProcessPaymentRequest model and return only the rejected status and payment id back (400 bad request). 
+  - The PaymentsController checks if all fields are present with the correct datatype and returns a 400 Bad Request with validation errors if invalid.
+  - The more natural approach will be using fluent validation to reject the request before it reaches the processor layer but based on the requirement, it is implemented this way. 
+    - If rejected status is absolutely required, this could be gotten around with custom middleware but this should be something that require further discussion.
+  - Also, the rejection reason is not returned back to the client as it wasn't specified in the requirements. I didn't return it for security reasons (to avoid leaking validation rules).
 ## Other nice to have features 
 Implemented:
 I added an extra feature that I believe would be nice to have in a real-world payment gateway:
