@@ -18,13 +18,7 @@ public class PaymentProcessor(IAcquiringBankClient acquiringBankClient, IPayment
         if (!validationResult.IsValid)
         {
             var errorMessages = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            var paymentEntity = new PaymentEntity
-            {
-                Id = paymentId,
-                FailReason = string.Join("; ", errorMessages),
-                Status = PaymentStatus.Rejected,
-                Currency = ""
-            };
+            var paymentEntity = request.ToPaymentEntity(paymentId, PaymentStatus.Rejected, string.Join("; ", errorMessages));
             paymentsRepository.Add(paymentEntity);
             
             return new ProcessPaymentResponse {Id = paymentId, Status = PaymentStatus.Rejected};

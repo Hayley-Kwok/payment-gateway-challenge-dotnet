@@ -149,7 +149,7 @@ public class PaymentProcessorTests
         var bankResponse = new AcquiringBankProcessPaymentResponse
         {
             Authorized = false,
-            AuthorizationCode = null
+            AuthorizationCode = ""
         };
 
         bankMock

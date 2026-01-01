@@ -63,13 +63,15 @@ public class ProcessPaymentRequestTests
         response.Amount.Should().Be(1500);
     }
 
-    [Fact]
-    public void ToPaymentEntity_ShouldMapAllFieldsCorrectly()
+    [Theory]
+    [InlineData("5555444433339876", 9876)] //valid card number
+    [InlineData("aasssdss", 0)] //string card number -> to confirm code doesn't break
+    public void ToPaymentEntity_ShouldMapAllFieldsCorrectly(string cardNumber, int lastFourDigit)
     {
         // Arrange
         var request = new ProcessPaymentRequest
         {
-            CardNumber = "5555444433339876",
+            CardNumber = cardNumber,
             ExpiryMonth = 1,
             ExpiryYear = 2026,
             Currency = "GBP",
@@ -87,7 +89,7 @@ public class ProcessPaymentRequestTests
         entity.Id.Should().Be(paymentId);
         entity.Status.Should().Be(PaymentStatus.Declined);
         entity.FailReason.Should().Be(errorMessage);
-        entity.CardNumberLastFour.Should().Be(9876);
+        entity.CardNumberLastFour.Should().Be(lastFourDigit);
         entity.ExpiryMonth.Should().Be(1);
         entity.ExpiryYear.Should().Be(2026);
         entity.Currency.Should().Be("GBP");

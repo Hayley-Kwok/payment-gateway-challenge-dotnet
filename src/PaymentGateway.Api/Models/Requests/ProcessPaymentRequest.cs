@@ -40,7 +40,7 @@ public class ProcessPaymentRequest
             Id = paymentId,
             Status =  paymentStatus,
             FailReason = errorMessage,
-            CardNumberLastFour = int.Parse(CardNumber[^4..]),
+            CardNumberLastFour = int.TryParse(CardNumber[^4..], out var lastFour) ? lastFour : 0,
             ExpiryMonth = ExpiryMonth,
             ExpiryYear = ExpiryYear,
             Currency = Currency,
