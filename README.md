@@ -30,8 +30,8 @@ src/
       Responses/
         AcquiringBankProcessPaymentResponse.cs      # Bank response DTO
         AcquiringBankProcessPaymentErrorResponse.cs # DTO for storing bank error responses from the http call. Saved for auditing.
-        ProcessPaymentResponse.cs  # Output response DTO for process payment endpoint (POST)
-        PostPaymentResponse.cs     # Output response DTO for payment details retrieval endpoint (GET)
+        ProcessPaymentResponse.cs                   # Output response DTO for process payment endpoint (POST)
+        PostPaymentResponse.cs                      # Output response DTO for payment details retrieval endpoint (GET)
       Validators/
         ProcessPaymentRequestValidator.cs      # FluentValidation rules for ProcessPaymentRequest input
     Services/
@@ -47,13 +47,8 @@ src/
     appsettings.Development.json
 
 test/
-  PaymentGateway.Api.Unit.Tests/
-    PaymentGateway.Api.Unit.Tests.csproj
-    Models/Validators/ProcessPaymentRequestValidatorTests.cs   # Validator coverage
-    Services/Processors/PaymentProcessorTests.cs               # Processor behavior coverage
-  PaymentGateway.Api.Integration.Tests/
-    PaymentGateway.Api.Integration.Tests.csproj
-    PaymentsControllerTests.cs                                 # Endpoint-level tests with stubbed bank
+  PaymentGateway.Api.Unit.Tests/        # for unit testing  individual components
+  PaymentGateway.Api.Integration.Tests/ # Endpoint-level tests with stubbed bank                            
 ```
 
 ## Made Design Choices
@@ -82,3 +77,5 @@ Future improvements that could be made given more time:
 - Idempotency: Ensure that repeated requests with the same idempotency key do not result in duplicate payments.
 - Logging: Implement structured logging (e.g., using Serilog) to capture detailed information about payment processing for monitoring and debugging.
 - Retry Logic: Implement retry mechanisms for transient failures when communicating with the acquiring bank.
+
+Disclaimer: I did make use of copilot to assist with boilerplate code and repetitive patterns to speed up the implementation.
