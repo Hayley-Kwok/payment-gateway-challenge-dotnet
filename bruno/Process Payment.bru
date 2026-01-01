@@ -1,0 +1,31 @@
+meta {
+  name: Process Payment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{basePath}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "cardNumber": "4247729101966742",
+    "ExpiryMonth": 11,
+    "ExpiryYear": 2028,
+    "Currency": "USD",
+    "Amount": 100, 
+    "CVV": "333"
+  }
+}
+
+body:form-urlencoded {
+  CardNumber: 3509695809830285
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
