@@ -25,8 +25,13 @@ public class ProcessPaymentRequestValidator : AbstractValidator<ProcessPaymentRe
             })
             .WithMessage("Card expiry date must not be in the past.");
         
+        RuleFor(x => x.Amount)
+            .GreaterThan(0).WithMessage("Amount must be a positive integer in minor currency units.");
+        
+        //this could be extended to have an iso enum for the entire list of valid currencies in a later stage
         RuleFor(x => x.Currency).Must(c => c.Length == 3)
             .WithMessage("Currency must be a valid 3-letter ISO currency code.");
+        
         RuleFor(x => x.CVV)
             .Matches(@"^\d+$").WithMessage("CVV must be numeric.")
             .Must(c => c.Length is 3 or 4).WithMessage("CVV must be 3 or 4 digits long.");

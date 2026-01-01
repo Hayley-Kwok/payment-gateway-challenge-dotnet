@@ -33,6 +33,28 @@ public class ProcessPaymentRequestValidatorTests
     }
 
     [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void GivenNonPositiveAmount_ValidationShouldFail(int amount)
+    {
+        var model = CreateValidRequest();
+        model.Amount = amount;
+        var result = _validator.TestValidate(model);
+        result.ShouldHaveValidationErrorFor(x => x.Amount);
+    }
+    
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1050)]
+    public void GivenValidAmount_ValidationShouldPass(int amount)
+    {
+        var model = CreateValidRequest();
+        model.Amount = amount;
+        var result = _validator.TestValidate(model);
+        result.ShouldNotHaveValidationErrorFor(x => x.Amount);
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("abcd")]
     [InlineData("1234567890123")]        // 13 digits (too short)
