@@ -71,11 +71,12 @@ test/
 ## Other nice to have features 
 Implemented:
 I added an extra feature that I believe would be nice to have in a real-world payment gateway:
-- Saving the failure reason when a payment is declined by the acquiring bank/rejected due to validation. This can help with troubleshooting and analytics or simply responding to a support request from clients.
+- Saving the failure reason when a payment is declined by the acquiring bank/rejected due to validation. This can help with troubleshooting and analytics or simply responding to a support request from clients. In future development, a separate endpoint can be created to retrieve failure reasons for auditing/support purposes.
 
 Future improvements that could be made given more time:
 - Idempotency: Ensure that repeated requests with the same idempotency key do not result in duplicate payments.
 - Logging: Implement structured logging (e.g., using Serilog) to capture detailed information about payment processing for monitoring and debugging.
 - Retry Logic: Implement retry mechanisms for transient failures when communicating with the acquiring bank.
+- Find a better way to spin up docker 
 
 Disclaimer: I did make use of copilot to assist with boilerplate code and repetitive patterns to speed up the implementation.

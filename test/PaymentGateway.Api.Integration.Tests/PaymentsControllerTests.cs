@@ -10,12 +10,19 @@ using PaymentGateway.Api.Models.Entities;
 using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Services.Repositories;
-using PaymentGateway.Api.Tests.Helpers;
 
 namespace PaymentGateway.Api.Tests;
 
+[Collection("BankSimulator")] 
 public class PaymentsControllerTests
 {
+    private HttpClient _client;
+    public PaymentsControllerTests()
+    {
+        var webApplicationFactory = new WebApplicationFactory<PaymentsController>();
+        _client = webApplicationFactory.CreateClient();
+    }
+    
     #region Get
     private readonly Random _random = new();
     
@@ -43,7 +50,7 @@ public class PaymentsControllerTests
             builder.ConfigureServices(services => ((ServiceCollection)services)
                 .AddSingleton<IPaymentsRepository>(paymentsRepository)))
             .CreateClient();
-
+        
         // Act
         var response = await client.GetAsync($"/api/Payments/{payment.Id}");
         var paymentResponse = await response.Content.ReadFromJsonAsync<PostPaymentResponse>();
@@ -62,12 +69,8 @@ public class PaymentsControllerTests
     [Fact]
     public async Task Get_Returns404IfPaymentNotFound()
     {
-        // Arrange
-        var webApplicationFactory = new WebApplicationFactory<PaymentsController>();
-        var client = webApplicationFactory.CreateClient();
-        
         // Act
-        var response = await client.GetAsync($"/api/Payments/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/api/Payments/{Guid.NewGuid()}");
         
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -77,7 +80,7 @@ public class PaymentsControllerTests
     #region Post
     private static ProcessPaymentRequest ValidRequest() => new()
     {
-        CardNumber = "4111111111111111",
+        CardNumber = "2222405343248877",
         ExpiryMonth = 12,
         ExpiryYear = DateTime.UtcNow.Year + 1,
         Currency = "USD",
@@ -88,30 +91,11 @@ public class PaymentsControllerTests
     [Fact]
     public async Task Post_WhenBankReturnAuthorized_Returns200WithAuthorized()
     {
-        // Arrange: stub acquiring bank HTTP to return authorized JSON
-        var bankResponseBody = new AcquiringBankProcessPaymentResponse { Authorized = true, AuthorizationCode = "AUTH-XYZ" };
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = JsonContent.Create(bankResponseBody)
-        };
-
-        var factory = new WebApplicationFactory<PaymentsController>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    // Replace HttpClient used by AcquiringBankClient with a stubbed instance
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient));
-                    if (descriptor is not null) services.Remove(descriptor);
-                    services.AddSingleton(StubAcquiringBankHttpHandler.CreateStubHttpClient(httpResponse));
-                });
-            });
-
-        var client = factory.CreateClient();
+        // Arrange
         var request = ValidRequest();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/Payments", request);
+        var response = await _client.PostAsJsonAsync("/api/Payments", request);
         var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
 
         // Assert
@@ -122,35 +106,18 @@ public class PaymentsControllerTests
         payload.Amount.Should().Be(request.Amount);
         payload.ExpiryMonth.Should().Be(request.ExpiryMonth);
         payload.ExpiryYear.Should().Be(request.ExpiryYear);
-        payload.CardNumberLastFour.Should().Be(1111);
+        payload.CardNumberLastFour.Should().Be(8877);
     }
 
     [Fact]
     public async Task Post_WhenBankReturnUnauthorized_Returns200WithDeclined()
     {
-        // Arrange: stub acquiring bank HTTP to return Declined JSON
-        var bankResponseBody = new AcquiringBankProcessPaymentResponse { Authorized = false };
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = JsonContent.Create(bankResponseBody)
-        };
-
-        var factory = new WebApplicationFactory<PaymentsController>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient));
-                    if (descriptor is not null) services.Remove(descriptor);
-                    services.AddSingleton(StubAcquiringBankHttpHandler.CreateStubHttpClient(httpResponse));
-                });
-            });
-
-        var client = factory.CreateClient();
+        // Arrange
         var request = ValidRequest();
+        request.CardNumber = "2222405343248878"; // card number that causes unauthorized in bank simulator
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/Payments", request);
+        var response = await _client.PostAsJsonAsync("/api/Payments", request);
         var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
 
         // Assert
@@ -162,29 +129,12 @@ public class PaymentsControllerTests
     [Fact]
     public async Task Post_WhenBankReturnError_Returns200WithDeclined()
     {
-        // Arrange: stub acquiring bank HTTP to return 400 with error body
-        var errorBody = "Invalid card number";
-        var httpResponse = new HttpResponseMessage(HttpStatusCode.BadRequest)
-        {
-            Content = new StringContent(errorBody)
-        };
-
-        var factory = new WebApplicationFactory<PaymentsController>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(HttpClient));
-                    if (descriptor is not null) services.Remove(descriptor);
-                    services.AddSingleton(StubAcquiringBankHttpHandler.CreateStubHttpClient(httpResponse));
-                });
-            });
-
-        var client = factory.CreateClient();
+        // Arrange
         var request = ValidRequest();
+        request.CardNumber = "2222405343248870"; // card number that causes 503 in bank simulator
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/Payments", request);
+        var response = await _client.PostAsJsonAsync("/api/Payments", request);
         var payload = await response.Content.ReadFromJsonAsync<ProcessPaymentResponse>();
 
         // Assert
@@ -197,9 +147,6 @@ public class PaymentsControllerTests
     public async Task Post_GivenInvalidRequest_Returns400WithRejected()
     {
         // Arrange: invalid request
-        var factory = new WebApplicationFactory<PaymentsController>();
-        var client = factory.CreateClient();
-
         var invalid = new ProcessPaymentRequest
         {
             CardNumber = "abcd", // non-numeric
@@ -211,7 +158,7 @@ public class PaymentsControllerTests
         };
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/Payments", invalid);
+        var response = await _client.PostAsJsonAsync("/api/Payments", invalid);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
