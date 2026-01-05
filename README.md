@@ -76,6 +76,7 @@ I added an extra feature that I believe would be nice to have in a real-world pa
 Future improvements that could be made given more time:
 - Idempotency: Ensure that repeated requests with the same idempotency key do not result in duplicate payments.
 - Logging: Implement structured logging (e.g., using Serilog) to capture detailed information about payment processing for monitoring and debugging.
+- Logging: Add more logging
 - Retry Logic: Implement retry mechanisms for transient failures when communicating with the acquiring bank.
 - Find a better way to spin up docker 
 
