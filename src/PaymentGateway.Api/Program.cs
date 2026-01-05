@@ -24,7 +24,7 @@ builder.Services.AddSingleton<HttpClient>();
 
 // there is a better way to feed in the url (e.g. from config/option) but for now this will do
 builder.Services.AddSingleton<IAcquiringBankClient, AcquiringBankClient>(sp => new AcquiringBankClient(AcquiringBankClient.LocalTestUrl,
-    sp.GetRequiredService<HttpClient>()));
+    sp.GetRequiredService<HttpClient>(), sp.GetRequiredService<ILogger<AcquiringBankClient>>()));
 
 builder.Services.AddSingleton<IPaymentRetriever, PaymentRetriever>();
 builder.Services.AddScoped<IPaymentProcessor, PaymentProcessor>();

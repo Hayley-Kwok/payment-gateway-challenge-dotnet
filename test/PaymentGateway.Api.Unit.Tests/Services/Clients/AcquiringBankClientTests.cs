@@ -3,6 +3,9 @@ using System.Net.Http.Json;
 using System.Text;
 
 using FluentAssertions;
+
+using Microsoft.Extensions.Logging;
+
 using Moq;
 using Moq.Protected;
 
@@ -14,6 +17,7 @@ namespace PaymentGateway.Api.Unit.Tests.Services.Clients;
 
 public class AcquiringBankClientTests
 {
+    private static ILogger<AcquiringBankClient> _logger = Mock.Of<ILogger<AcquiringBankClient>>();
     private static HttpClient CreateHttpClient(HttpResponseMessage response)
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -38,7 +42,7 @@ public class AcquiringBankClientTests
             Content = JsonContent.Create(expected)
         };
         var httpClient = CreateHttpClient(httpResponse);
-        var client = new AcquiringBankClient("http://example/payments", httpClient);
+        var client = new AcquiringBankClient("http://example/payments", httpClient, _logger);
         var request = new AcquiringBankProcessPaymentRequest
         {
             CardNumber = "4111111111111111",
@@ -67,7 +71,7 @@ public class AcquiringBankClientTests
             Content = new StringContent("")
         };
         var httpClient = CreateHttpClient(httpResponse);
-        var client = new AcquiringBankClient("http://example/payments", httpClient);
+        var client = new AcquiringBankClient("http://example/payments", httpClient, _logger);
         var request = new AcquiringBankProcessPaymentRequest
         {
             CardNumber = "4111111111111111",
@@ -96,7 +100,7 @@ public class AcquiringBankClientTests
             Content = new StringContent("null", Encoding.UTF8, "application/json")
         };
         var httpClient = CreateHttpClient(httpResponse);
-        var client = new AcquiringBankClient("http://example/payments", httpClient);
+        var client = new AcquiringBankClient("http://example/payments", httpClient, _logger);
         var request = new AcquiringBankProcessPaymentRequest
         {
             CardNumber = "4111111111111111",
@@ -126,7 +130,7 @@ public class AcquiringBankClientTests
             Content = new StringContent(errorBody)
         };
         var httpClient = CreateHttpClient(httpResponse);
-        var client = new AcquiringBankClient("http://example/payments", httpClient);
+        var client = new AcquiringBankClient("http://example/payments", httpClient, _logger);
         var request = new AcquiringBankProcessPaymentRequest
         {
             CardNumber = "0000",
